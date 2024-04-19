@@ -15,7 +15,6 @@ import {
 } from "../types/type";
 // import { defaultNavElement } from "@/constants";
 import { createSpecificShape } from "./shapes";
-import { defaultNavElement } from "@/constants";
 
 // initialize fabric canvas
 export const initializeFabric = ({
@@ -30,6 +29,7 @@ export const initializeFabric = ({
   if (!canvasRef.current) return;
   console.log("initializing fabric");
   const canvas = new fabric.Canvas(canvasRef.current, {
+    selectionColor: "rgba(100,100,100,0.3)",
     width: canvasContainer?.clientWidth,
     height: canvasContainer?.clientHeight,
   });
@@ -41,7 +41,13 @@ export const initializeFabric = ({
 };
 
 // instantiate creation of custom fabric object/shape and add it to canvas
-export const handleCanvasMouseDown = ({ options, canvas, selectedShapeRef, isDrawing, shapeRef }: CanvasMouseDown) => {
+export const handleCanvasMouseDown = ({
+  options,
+  canvas,
+  selectedShapeRef,
+  isDrawing,
+  shapeRef,
+}: CanvasMouseDown) => {
   // get pointer coordinates
   const pointer = canvas.getPointer(options.e);
 
@@ -163,13 +169,10 @@ export const handleCanvaseMouseMove = ({
 
 // handle mouse up event on canvas to stop drawing shapes
 export const handleCanvasMouseUp = ({
-  canvas,
   isDrawing,
   shapeRef,
-  activeObjectRef,
   selectedShapeRef,
   syncShapeInStorage,
-  setActiveElement,
 }: CanvasMouseUp) => {
   isDrawing.current = false;
   if (selectedShapeRef.current === "freeform") return;
@@ -179,19 +182,22 @@ export const handleCanvasMouseUp = ({
 
   // set everything to null
   shapeRef.current = null;
-  activeObjectRef.current = null;
-  selectedShapeRef.current = null;
+  // activeObjectRef.current = null;
+  // selectedShapeRef.current = null;
 
   // if canvas is not in drawing mode, set active element to default nav element after 700ms
-  if (!canvas.isDrawingMode) {
-    setTimeout(() => {
-      setActiveElement(defaultNavElement);
-    }, 700);
-  }
+  // if (!canvas.isDrawingMode) {
+  //   setTimeout(() => {
+  //     setActiveElement(defaultNavElement);
+  //   }, 700);
+  // }
 };
 
 // update shape in storage when object is modified
-export const handleCanvasObjectModified = ({ options, syncShapeInStorage }: CanvasObjectModified) => {
+export const handleCanvasObjectModified = ({
+  options,
+  syncShapeInStorage,
+}: CanvasObjectModified) => {
   const target = options.target;
   if (!target) return;
 
@@ -287,7 +293,10 @@ export const handleCanvasSelectionCreated = ({
 };
 
 // update element attributes when element is scaled
-export const handleCanvasObjectScaling = ({ options, setElementAttributes }: CanvasObjectScaling) => {
+export const handleCanvasObjectScaling = ({
+  options,
+  setElementAttributes,
+}: CanvasObjectScaling) => {
   const selectedElement = options.target;
 
   // calculate scaled dimensions of the object

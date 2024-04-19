@@ -16,11 +16,14 @@ const ShapesMenu = ({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild className="no-ring">
-          <Button className="relative h-5 w-5 object-contain" onClick={() => handleActiveElement(item)}>
+          <Button
+            className="relative h-5 w-5 object-contain"
+            onClick={() => handleActiveElement(item)}
+          >
             <img
               src={isDropdownElem ? activeElement.icon : item.icon}
               alt={item.name}
-              className={`${isDropdownElem ? "invert" : ""} absolute h-5 w-5`}
+              className={"absolute h-5 w-5"}
             />
           </Button>
         </DropdownMenuTrigger>
@@ -33,7 +36,9 @@ const ShapesMenu = ({
                 handleActiveElement(elem);
               }}
               className={`flex h-fit justify-between gap-10 rounded-none px-5 py-3 focus:border-none ${
-                activeElement.value === elem?.value ? "bg-primary-green" : "hover:bg-primary-grey-200"
+                activeElement.value === elem?.value
+                  ? "bg-primary-green"
+                  : "hover:bg-primary-grey-200"
               }`}
             >
               <div className="group flex items-center gap-2">
@@ -44,7 +49,9 @@ const ShapesMenu = ({
                   height={20}
                   className={activeElement.value === elem?.value ? "invert" : ""}
                 />
-                <p className={`text-sm ${activeElement.value === elem?.value ? "text-primary-black" : "text-white"}`}>
+                <p
+                  className={`text-sm ${activeElement.value === elem?.value ? "text-primary-black" : "text-white"}`}
+                >
                   {elem?.name}
                 </p>
               </div>
@@ -53,7 +60,13 @@ const ShapesMenu = ({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <input type="file" className="hidden" ref={imageInputRef} accept="image/*" onChange={handleImageUpload} />
+      <input
+        type="file"
+        className="hidden"
+        ref={imageInputRef}
+        accept="image/*"
+        onChange={handleImageUpload}
+      />
     </>
   );
 };

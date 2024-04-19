@@ -1,12 +1,8 @@
-// import { fabric } from "fabric";
-// import { useEffect, useRef } from "react";
-// import { initializeFabric, handleResize, handleCanvasMouseDown } from "./lib/canvas";
-
 import Navbar from "@/components/Navbar";
 import LeftSidebar from "./components/LeftSidebar";
 import Live from "./components/Live";
 import RightSidebar from "./components/RightSidebar";
-import { useState, useRef } from "react";
+import { useState, useRef, ChangeEvent } from "react";
 import { ActiveElement, Attributes } from "./types/type";
 import { useMutation, useStorage, useUndo, useRedo } from "#root/liveblocks.config";
 import { defaultNavElement } from "./constants";
@@ -14,9 +10,7 @@ import { handleDelete } from "./lib/key-events";
 import { handleImageUpload } from "./lib/shapes";
 
 function App() {
-  // const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fabricRef = useRef<fabric.Canvas | null>(null);
-  // const isDrawing = useRef(false);
+  const fabricRef = useRef<fabric.Canvas>(null);
   const shapeRef = useRef<fabric.Object | null>(null);
   const selectedShapeRef = useRef<string | null>(null);
   const canvasObjects = useStorage((root) => root.canvasObjects);
@@ -54,7 +48,8 @@ function App() {
     return canvasObjects.size === 0;
   }, []);
 
-  const deleteShapeFromStorage = useMutation(({ storage }, objectId) => {
+  const deleteShapeFromStorage = useMutation(({ storage }, objectId: string) => {
+    console.log("%c [ objectId ]-52", "font-size:13px; background:#ccc; color:blue;", objectId);
     const canvasObjects = storage.get("canvasObjects");
     canvasObjects.delete(objectId);
   }, []);
@@ -70,7 +65,7 @@ function App() {
         break;
 
       case "delete":
-        handleDelete(fabricRef.current as any, deleteShapeFromStorage);
+        handleDelete(fabricRef.current as fabric.Canvas, deleteShapeFromStorage);
         setActiveElement(defaultNavElement);
         break;
 
@@ -107,15 +102,16 @@ function App() {
         activeElement={activeElement}
         handleActiveElement={handleActiveElement}
         imageInputRef={imageInputRef}
-        handleImageUpload={(e: any) => {
+        handleImageUpload={(e: ChangeEvent<HTMLInputElement>) => {
           e.stopPropagation();
-
-          handleImageUpload({
-            file: e.target.files[0],
-            canvas: fabricRef as any,
-            shapeRef,
-            syncShapeInStorage,
-          });
+          if (e.target.files?.[0]) {
+            handleImageUpload({
+              file: e.target.files[0],
+              canvas: fabricRef,
+              shapeRef,
+              syncShapeInStorage,
+            });
+          }
         }}
       />
       <section className="flex h-full flex-row">

@@ -34,31 +34,12 @@ export const shapeElements = [
 ];
 
 export const navElements = [
-  {
-    icon: "/assets/select.svg",
-    name: "Select",
-    value: "select",
-  },
-  {
-    icon: "/assets/rectangle.svg",
-    name: "Rectangle",
-    value: shapeElements,
-  },
-  {
-    icon: "/assets/text.svg",
-    value: "text",
-    name: "Text",
-  },
-  {
-    icon: "/assets/delete.svg",
-    value: "delete",
-    name: "Delete",
-  },
-  {
-    icon: "/assets/reset.svg",
-    value: "reset",
-    name: "Reset",
-  },
+  { icon: "/assets/select.svg", name: "Select", value: "select" },
+  { icon: "/assets/hand.svg", name: "Hand", value: "hand" },
+  { icon: "/assets/rectangle.svg", name: "Rectangle", value: shapeElements },
+  { icon: "/assets/text.svg", value: "text", name: "Text" },
+  { icon: "/assets/delete.svg", value: "delete", name: "Delete" },
+  { icon: "/assets/reset.svg", value: "reset", name: "Reset" },
   // {
   //   icon: "/assets/comments.svg",
   //   value: "comments",

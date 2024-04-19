@@ -1,13 +1,11 @@
 import { memo } from "react";
 
 import { navElements } from "@/constants";
-console.log("🚀 ~ navElements:", navElements);
-import { ActiveElement, NavbarProps } from "@/types/type";
+import { ActiveElement, INavElement, NavbarProps } from "@/types/type";
 
 import { Button } from "./ui/button";
 import ShapesMenu from "./ShapesMenu";
 import ActiveUsers from "./users/ActiveUsers";
-import { NewThread } from "./comments/NewThread";
 
 const NavbarFC = ({
   activeElement,
@@ -24,13 +22,9 @@ const NavbarFC = ({
       <img src="/assets/logo.svg" alt="FigPro Logo" width={58} height={20} />
 
       <ul className="flex flex-row">
-        {navElements.map((item: ActiveElement | any) => (
+        {navElements.map((item: INavElement) => (
           <li
             key={item.name}
-            onClick={() => {
-              if (Array.isArray(item.value)) return;
-              handleActiveElement(item);
-            }}
             className={`group flex items-center justify-center px-2.5 py-5 ${
               isActive(item.value) ? "bg-primary-green" : "hover:bg-primary-grey-200"
             }`}
@@ -44,24 +38,14 @@ const NavbarFC = ({
                 handleActiveElement={handleActiveElement}
                 handleImageUpload={handleImageUpload}
               />
-            ) : item?.value === "comments" ? (
-              // If value is comments, trigger the NewThread component
-              <NewThread>
-                <Button className="relative h-5 w-5 object-contain">
-                  <img
-                    src={item.icon}
-                    alt={item.name}
-                    className={`${isActive(item.value) ? "invert" : ""} absolute h-5 w-5`}
-                  />
-                </Button>
-              </NewThread>
             ) : (
-              <Button className="relative h-5 w-5 object-contain">
-                <img
-                  src={item.icon}
-                  alt={item.name}
-                  className={`${isActive(item.value) ? "invert" : ""} absolute h-5 w-5`}
-                />
+              <Button
+                className="relative h-5 w-5 object-contain"
+                onClick={() => {
+                  handleActiveElement(item as ActiveElement);
+                }}
+              >
+                <img src={item.icon} alt={item.name} className="absolute h-5 w-5" />
               </Button>
             )}
           </li>

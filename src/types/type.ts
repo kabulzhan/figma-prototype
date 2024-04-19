@@ -83,7 +83,7 @@ export type ElementDirection = {
 
 export type ImageUpload = {
   file: File;
-  canvas: React.MutableRefObject<fabric.Canvas>;
+  canvas: React.RefObject<fabric.Canvas>;
   shapeRef: React.MutableRefObject<fabric.Object | null>;
   syncShapeInStorage: (shape: fabric.Object) => void;
 };
@@ -104,15 +104,21 @@ export type NavbarProps = {
   handleActiveElement: (element: ActiveElement) => void;
 };
 
+export interface IShapeElement {
+  name: string;
+  icon: string;
+  value: string;
+}
+
+export interface INavElement extends Omit<IShapeElement, "value"> {
+  value: string | IShapeElement[];
+}
+
 export type ShapesMenuProps = {
-  item: {
-    name: string;
-    icon: string;
-    value: Array<ActiveElement>;
-  };
+  item: INavElement;
   activeElement: any;
   handleActiveElement: any;
-  handleImageUpload: any;
+  handleImageUpload: React.ChangeEventHandler<HTMLInputElement>;
   imageInputRef: any;
 };
 
@@ -134,13 +140,10 @@ export type CanvasMouseMove = {
 };
 
 export type CanvasMouseUp = {
-  canvas: fabric.Canvas;
   isDrawing: React.MutableRefObject<boolean>;
   shapeRef: any;
-  activeObjectRef: React.MutableRefObject<fabric.Object | null>;
   selectedShapeRef: any;
   syncShapeInStorage: (shape: fabric.Object) => void;
-  setActiveElement: any;
 };
 
 export type CanvasObjectModified = {
