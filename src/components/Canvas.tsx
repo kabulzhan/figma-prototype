@@ -181,7 +181,7 @@ const CanvasFC = ({
     renderCanvas({ fabricRef, canvasObjects, activeObjectRef });
   }, [canvasObjects]);
 
-  return <canvas ref={canvasRef} className="h-full w-full border-4 border-cyan-500" />;
+  return <canvas ref={canvasRef} className="h-full w-full" />;
 };
 
 const Canvas = memo(CanvasFC);
