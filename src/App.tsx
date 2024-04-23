@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import LeftSidebar from "./components/LeftSidebar";
 import Live from "./components/Live";
 import RightSidebar from "./components/RightSidebar";
-import { useState, useRef, ChangeEvent } from "react";
+import { useState, useRef, ChangeEvent, useCallback } from "react";
 import { ActiveElement, Attributes } from "./types/type";
 import { useMutation, useStorage, useUndo, useRedo } from "#root/liveblocks.config";
 import { defaultNavElement } from "./constants";
@@ -49,41 +49,95 @@ function App() {
   }, []);
 
   const deleteShapeFromStorage = useMutation(({ storage }, objectId: string) => {
-    console.log("%c [ objectId ]-52", "font-size:13px; background:#ccc; color:blue;", objectId);
     const canvasObjects = storage.get("canvasObjects");
     canvasObjects.delete(objectId);
   }, []);
 
-  const handleActiveElement = (elem: ActiveElement) => {
-    setActiveElement(elem);
+  const updateCursorType = useCallback(
+    (activeElemParam?: string) => {
+      if (!fabricRef.current) return;
+      const value = activeElemParam ?? activeElement?.value;
 
-    switch (elem?.value) {
-      case "reset":
-        deleteAllShapes();
-        fabricRef.current?.clear();
-        setActiveElement(defaultNavElement);
-        break;
+      switch (value) {
+        case "hand":
+          fabricRef.current.hoverCursor = "grab";
+          fabricRef.current.defaultCursor = "grab";
+          fabricRef.current.moveCursor = "grab";
+          fabricRef.current.setCursor("grab");
+          fabricRef.current.renderTop();
+          break;
 
-      case "delete":
-        handleDelete(fabricRef.current as fabric.Canvas, deleteShapeFromStorage);
-        setActiveElement(defaultNavElement);
-        break;
+        case "grabbing":
+          fabricRef.current.hoverCursor = "grabbing";
+          fabricRef.current.defaultCursor = "grabbing";
+          fabricRef.current.moveCursor = "grabbing";
+          fabricRef.current.setCursor("grabbing");
+          fabricRef.current.renderTop();
+          break;
 
-      case "image":
-        imageInputRef.current?.click();
-        isDrawing.current = false;
+        default:
+          if (fabricRef.current.hoverCursor !== "default") {
+            fabricRef.current.hoverCursor = "default";
+            fabricRef.current.defaultCursor = "default";
+            fabricRef.current.setCursor("default");
+            fabricRef.current.renderTop();
+          }
+          break;
+      }
+    },
+    [activeElement],
+  );
 
-        if (fabricRef.current) {
-          fabricRef.current.isDrawingMode = false;
-        }
-        break;
+  const handleActiveElement = useCallback(
+    (elem: ActiveElement) => {
+      setActiveElement(elem);
 
-      default:
-        break;
-    }
+      switch (elem?.value) {
+        case "reset":
+          deleteAllShapes();
+          fabricRef.current?.clear();
+          setActiveElement(defaultNavElement);
+          break;
 
-    selectedShapeRef.current = elem?.value as string;
-  };
+        case "delete":
+          handleDelete(fabricRef.current as fabric.Canvas, deleteShapeFromStorage);
+          setActiveElement(defaultNavElement);
+          break;
+
+        case "image":
+          imageInputRef.current?.click();
+          isDrawing.current = false;
+
+          if (fabricRef.current) {
+            fabricRef.current.isDrawingMode = false;
+          }
+          break;
+
+        case "hand":
+          if (!fabricRef.current) break;
+          fabricRef.current.selection = false;
+          fabricRef.current.forEachObject(function (o) {
+            o.selectable = false;
+          });
+          updateCursorType("hand");
+
+          break;
+
+        default:
+          if (fabricRef.current && !fabricRef.current.selection) {
+            updateCursorType("default");
+            fabricRef.current.selection = true;
+            fabricRef.current.forEachObject(function (o) {
+              o.selectable = true;
+            });
+          }
+          break;
+      }
+
+      selectedShapeRef.current = elem?.value as string;
+    },
+    [deleteAllShapes, deleteShapeFromStorage, updateCursorType],
+  );
 
   const syncShapeInStorage = useMutation(({ storage }, object) => {
     if (!object) return;
@@ -129,6 +183,8 @@ function App() {
           activeObjectRef={activeObjectRef}
           undo={undo}
           redo={redo}
+          updateCursorType={updateCursorType}
+          handleActiveElement={handleActiveElement}
         />
         <RightSidebar
           elementAttributes={elementAttributes}

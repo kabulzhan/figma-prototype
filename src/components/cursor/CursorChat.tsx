@@ -35,7 +35,8 @@ const CursorChat = ({ cursor, cursorState, setCursorState, updateMyPresence }: C
           <CursorSVG color="#000" />
           <div
             onKeyUp={(e) => e.stopPropagation()}
-            className="g-blue-500 absolute left-2 top-5 rounded-[20px] bg-blue-500 px-4 py-2 text-sm leading-relaxed text-white"
+            className="g-blue-500 absolute left-2 top-5 rounded-[20px] bg-blue-500 px-4 py-2 text-sm leading-relaxed
+              text-white"
           >
             {cursorState.previousMessage && <div>{cursorState.previousMessage}</div>}
             <input

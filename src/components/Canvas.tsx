@@ -30,6 +30,7 @@ type CanvasProps = {
   activeObjectRef: React.MutableRefObject<fabric.Object | null>;
   undo: () => void;
   redo: () => void;
+  updateCursorType: (activeElemParam?: string) => void;
 };
 
 const MAX_SCALE = 2;
@@ -52,6 +53,7 @@ const CanvasFC = ({
   activeObjectRef,
   undo,
   redo,
+  updateCursorType,
 }: CanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   // const [isFabricInitialized, setIsFabricInitialized] = useState(false);
@@ -62,14 +64,17 @@ const CanvasFC = ({
     if (fabricRef.current) return;
 
     const canvas = initializeFabric({ canvasRef, fabricRef }) as IExtendedCanvas;
-    console.log("fabric initialized", canvas);
     if (!canvas) return;
 
     canvas.on("mouse:down", (options) => {
+      canvas.isDragging = true;
+      if (selectedShapeRef.current === "hand") updateCursorType("grabbing");
+      if (!canvas.selection) return;
       handleCanvasMouseDown({ options, canvas, isDrawing, shapeRef, selectedShapeRef });
     });
 
     canvas.on("mouse:move", (options) => {
+      if (!canvas.selection) return;
       handleCanvaseMouseMove({
         options,
         canvas,
@@ -81,7 +86,8 @@ const CanvasFC = ({
     });
 
     canvas.on("mouse:up", () => {
-      console.log("UP");
+      canvas.isDragging = false;
+      if (selectedShapeRef.current === "hand") updateCursorType("hand");
       handleCanvasMouseUp({
         isDrawing,
         shapeRef,
@@ -91,6 +97,7 @@ const CanvasFC = ({
     });
 
     canvas.on("object:modified", (options) => {
+      if (!canvas.selection) return;
       handleCanvasObjectModified({ options, syncShapeInStorage });
     });
 
@@ -115,34 +122,11 @@ const CanvasFC = ({
       opt.e.stopPropagation();
     });
 
-    canvas.on("mouse:up", function () {
-      // console.log("THIS: ", this.viewportTransform);
-      // canvas.setViewportTransform(canvas.viewportTransform);
-      canvas.isDragging = false;
-      canvas.selection = true;
-    });
-
-    canvas.on("mouse:down", function () {
-      canvas.isDragging = true;
-      if (selectedShapeRef.current === "hand") {
-        canvas.selection = false;
-      }
-    });
-
     canvas.on("mouse:move", function (event) {
-      console.log("move", canvas.isDragging);
       if (canvas.isDragging && selectedShapeRef.current === "hand") {
-        console.log("dragging");
         const mEvent = event.e;
         const delta = new fabric.Point(mEvent.movementX, mEvent.movementY);
         canvas.relativePan(delta);
-        // console.log("hello");
-        // this.viewportTransform[4] += opt.e.clientX - this.lastPosX;
-        // this.viewportTransform[5] += opt.e.clientY - this.lastPosY;
-
-        // this.lastPosX = opt.e.clientX;
-        // this.lastPosY = opt.e.clientY;
-        // this.requestRenderAll();
       }
     });
 
@@ -158,10 +142,6 @@ const CanvasFC = ({
         deleteShapeFromStorage,
       });
     });
-
-    // return () => {
-    //   if (canvas) canvas.dispose();
-    // };
   }, [
     selectedShapeRef,
     fabricRef,
@@ -175,6 +155,7 @@ const CanvasFC = ({
     isEditingRef,
     setElementAttributes,
     deleteShapeFromStorage,
+    updateCursorType,
   ]);
 
   useEffect(() => {

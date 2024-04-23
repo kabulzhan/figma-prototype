@@ -4,14 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useBroadcastEvent, useEventListener, useMyPresence } from "#root/liveblocks.config";
 import LiveCursors from "./cursor/LiveCursors";
 import CursorChat from "./cursor/CursorChat";
-import {
-  ActiveElement,
-  Attributes,
-  CursorMode,
-  CursorState,
-  Reaction,
-  ReactionEvent,
-} from "@/types/type";
+import { ActiveElement, Attributes, CursorMode, CursorState, Reaction } from "@/types/type";
 import ReactionSelector from "./reaction/ReactionButton";
 import FlyingReaction from "./reaction/FlyingReaction";
 import useInterval from "@/hooks/useInterval";
@@ -30,13 +23,15 @@ type LiveProps = {
   isDrawing: React.MutableRefObject<boolean>;
   setActiveElement: React.Dispatch<React.SetStateAction<ActiveElement>>;
   fabricRef: React.MutableRefObject<fabric.Canvas | null>;
-  deleteShapeFromStorage: (objectId: any) => void;
-  syncShapeInStorage: (object: any) => void;
+  deleteShapeFromStorage: (objectId: string) => void;
+  syncShapeInStorage: (object: fabric.Object) => void;
   isEditingRef: React.MutableRefObject<boolean>;
   setElementAttributes: React.Dispatch<React.SetStateAction<Attributes>>;
   activeObjectRef: React.MutableRefObject<fabric.Object | null>;
   undo: () => void;
   redo: () => void;
+  updateCursorType: (activeElemParam?: string) => void;
+  handleActiveElement: (elem: ActiveElement) => void;
 };
 
 const Live = ({
@@ -52,6 +47,8 @@ const Live = ({
   activeObjectRef,
   undo,
   redo,
+  updateCursorType,
+  handleActiveElement,
 }: LiveProps) => {
   const [{ cursor }, updateMyPresence] = useMyPresence();
 
@@ -88,7 +85,7 @@ const Live = ({
   }, 100);
 
   useEventListener((eventData) => {
-    const event = eventData.event as ReactionEvent;
+    const event = eventData.event;
 
     setReaction((reactions) =>
       reactions.concat([
@@ -141,34 +138,43 @@ const Live = ({
 
   useEffect(() => {
     const onKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "/") {
-        setCursorState({
-          mode: CursorMode.Chat,
-          previousMessage: null,
-          message: "",
-        });
-      } else if (e.key === "Escape") {
-        updateMyPresence({ message: "" });
-        setCursorState({ mode: CursorMode.Hidden });
-      } else if (e.key === "e") {
-        setCursorState({
-          mode: CursorMode.ReactionSelector,
-        });
-      }
-    };
+      switch (e.key) {
+        case "/":
+          setCursorState({
+            mode: CursorMode.Chat,
+            previousMessage: null,
+            message: "",
+          });
+          break;
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "/") {
-        e.preventDefault();
+        case "Escape":
+          updateMyPresence({ message: "" });
+          setCursorState({ mode: CursorMode.Hidden });
+          break;
+
+        case "e":
+          setCursorState({
+            mode: CursorMode.ReactionSelector,
+          });
+          break;
+
+        case "h":
+          handleActiveElement({ icon: "/assets/hand.svg", name: "Hand", value: "hand" });
+          break;
+
+        case "v":
+          handleActiveElement({ icon: "/assets/select.svg", name: "Select", value: "select" });
+          break;
+
+        default:
+          break;
       }
     };
 
     window.addEventListener("keyup", onKeyUp);
-    window.addEventListener("keydown", onKeyDown);
 
     return () => {
       window.removeEventListener("keyup", onKeyUp);
-      window.removeEventListener("keydown", onKeyDown);
     };
   }, [updateMyPresence]);
 
@@ -176,34 +182,37 @@ const Live = ({
     setCursorState({ mode: CursorMode.Reaction, reaction, isPressed: false });
   }, []);
 
-  const handleContextMenuClick = useCallback((key: string) => {
-    switch (key) {
-      case "Chat":
-        setCursorState({
-          mode: CursorMode.Chat,
-          previousMessage: null,
-          message: "",
-        });
-        break;
+  const handleContextMenuClick = useCallback(
+    (key: string) => {
+      switch (key) {
+        case "Chat":
+          setCursorState({
+            mode: CursorMode.Chat,
+            previousMessage: null,
+            message: "",
+          });
+          break;
 
-      case "Undo":
-        undo();
-        break;
+        case "Undo":
+          undo();
+          break;
 
-      case "Redo":
-        redo();
-        break;
+        case "Redo":
+          redo();
+          break;
 
-      case "Reactions":
-        setCursorState({
-          mode: CursorMode.ReactionSelector,
-        });
-        break;
+        case "Reactions":
+          setCursorState({
+            mode: CursorMode.ReactionSelector,
+          });
+          break;
 
-      default:
-        break;
-    }
-  }, []);
+        default:
+          break;
+      }
+    },
+    [redo, undo],
+  );
 
   return (
     <ContextMenu>
@@ -229,6 +238,7 @@ const Live = ({
             activeObjectRef={activeObjectRef}
             undo={undo}
             redo={redo}
+            updateCursorType={updateCursorType}
           />
 
           {reaction.map((r) => (

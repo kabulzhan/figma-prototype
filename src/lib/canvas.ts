@@ -27,7 +27,6 @@ export const initializeFabric = ({
   // get canvas element
   const canvasContainer = document.getElementById("canvas");
   if (!canvasRef.current) return;
-  console.log("initializing fabric");
   const canvas = new fabric.Canvas(canvasRef.current, {
     selectionColor: "rgba(100,100,100,0.3)",
     width: canvasContainer?.clientWidth,
