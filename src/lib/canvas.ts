@@ -69,8 +69,6 @@ export const handleCanvasMouseDown = ({
     return;
   }
 
-  canvas.isDrawingMode = false;
-
   // if target is the selected shape or active selection, set isDrawing to false
   if (target && (target.type === selectedShapeRef.current || target.type === "activeSelection")) {
     isDrawing.current = false;
@@ -87,7 +85,7 @@ export const handleCanvasMouseDown = ({
     isDrawing.current = true;
 
     // create custom fabric object/shape and set it to shapeRef
-    shapeRef.current = createSpecificShape(selectedShapeRef.current, pointer as any);
+    shapeRef.current = createSpecificShape(selectedShapeRef.current, pointer);
 
     // if shapeRef is not null, add it to canvas
     if (shapeRef.current) {
@@ -109,7 +107,7 @@ export const handleCanvaseMouseMove = ({
   // if selected shape is freeform, return
   if (!isDrawing.current) return;
   if (selectedShapeRef.current === "freeform") return;
-
+  console.log("THIS");
   canvas.isDrawingMode = false;
 
   // get pointer coordinates
@@ -119,6 +117,8 @@ export const handleCanvaseMouseMove = ({
   // calculate shape dimensions based on pointer coordinates
   switch (selectedShapeRef?.current) {
     case "rectangle":
+    case "triangle":
+    case "image":
       shapeRef.current?.set({
         width: pointer.x - (shapeRef.current?.left || 0),
         height: pointer.y - (shapeRef.current?.top || 0),
@@ -131,24 +131,10 @@ export const handleCanvaseMouseMove = ({
       });
       break;
 
-    case "triangle":
-      shapeRef.current?.set({
-        width: pointer.x - (shapeRef.current?.left || 0),
-        height: pointer.y - (shapeRef.current?.top || 0),
-      });
-      break;
-
     case "line":
       shapeRef.current?.set({
         x2: pointer.x,
         y2: pointer.y,
-      });
-      break;
-
-    case "image":
-      shapeRef.current?.set({
-        width: pointer.x - (shapeRef.current?.left || 0),
-        height: pointer.y - (shapeRef.current?.top || 0),
       });
       break;
 

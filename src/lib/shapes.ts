@@ -1,9 +1,15 @@
 import { fabric } from "fabric";
 import { v4 as uuidv4 } from "uuid";
 
-import { CustomFabricObject, ElementDirection, ImageUpload, ModifyShape } from "../types/type";
+import {
+  CustomFabricObject,
+  ElementDirection,
+  ImageUpload,
+  ModifyShape,
+  PointerCoords,
+} from "../types/type";
 
-export const createRectangle = (pointer: PointerEvent) => {
+export const createRectangle = (pointer: PointerCoords) => {
   const rect = new fabric.Rect({
     left: pointer.x,
     top: pointer.y,
@@ -16,7 +22,7 @@ export const createRectangle = (pointer: PointerEvent) => {
   return rect;
 };
 
-export const createTriangle = (pointer: PointerEvent) => {
+export const createTriangle = (pointer: PointerCoords) => {
   return new fabric.Triangle({
     left: pointer.x,
     top: pointer.y,
@@ -27,17 +33,18 @@ export const createTriangle = (pointer: PointerEvent) => {
   } as CustomFabricObject);
 };
 
-export const createCircle = (pointer: PointerEvent) => {
+export const createCircle = (pointer: PointerCoords) => {
   return new fabric.Circle({
     left: pointer.x,
     top: pointer.y,
     radius: 100,
     fill: "#aabbcc",
+    // @ts-expect-error add id property
     objectId: uuidv4(),
-  } as any);
+  });
 };
 
-export const createLine = (pointer: PointerEvent) => {
+export const createLine = (pointer: PointerCoords) => {
   return new fabric.Line([pointer.x, pointer.y, pointer.x + 100, pointer.y + 100], {
     stroke: "#aabbcc",
     strokeWidth: 2,
@@ -45,7 +52,7 @@ export const createLine = (pointer: PointerEvent) => {
   } as CustomFabricObject);
 };
 
-export const createText = (pointer: PointerEvent, text: string) => {
+export const createText = (pointer: PointerCoords, text: string) => {
   return new fabric.IText(text, {
     left: pointer.x,
     top: pointer.y,
@@ -57,7 +64,7 @@ export const createText = (pointer: PointerEvent, text: string) => {
   } as fabric.ITextOptions);
 };
 
-export const createSpecificShape = (shapeType: string, pointer: PointerEvent) => {
+export const createSpecificShape = (shapeType: string, pointer: PointerCoords) => {
   switch (shapeType) {
     case "rectangle":
       return createRectangle(pointer);
@@ -90,7 +97,7 @@ export const handleImageUpload = ({ file, canvas, shapeRef, syncShapeInStorage }
 
       canvas.current.add(img);
 
-      // @ts-ignore
+      //@ts-expect-error add custom id property
       img.objectId = uuidv4();
 
       shapeRef.current = img;

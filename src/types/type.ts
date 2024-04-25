@@ -185,3 +185,8 @@ export type CursorChatProps = {
     }>,
   ) => void;
 };
+
+export type PointerCoords = {
+  x: number;
+  y: number;
+};
