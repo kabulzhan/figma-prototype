@@ -16,6 +16,8 @@ import {
 // import { defaultNavElement } from "@/constants";
 import { createSpecificShape } from "./shapes";
 
+fabric.Object.prototype.controls.mtr.visible = false;
+
 // initialize fabric canvas
 export const initializeFabric = ({
   fabricRef,
@@ -32,6 +34,7 @@ export const initializeFabric = ({
     width: canvasContainer?.clientWidth,
     height: canvasContainer?.clientHeight,
   });
+  canvas._objects;
 
   // set canvas reference to fabricRef so we can use it later anywhere outside canvas listener
   fabricRef.current = canvas;
