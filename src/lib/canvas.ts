@@ -148,9 +148,9 @@ export const handleCanvaseMouseMove = ({
   canvas.renderAll();
 
   // sync shape in storage
-  if (shapeRef.current?.objectId) {
-    syncShapeInStorage(shapeRef.current);
-  }
+  // if (shapeRef.current?.objectId) {
+  //   syncShapeInStorage(shapeRef.current);
+  // }
 };
 
 // handle mouse up event on canvas to stop drawing shapes
@@ -164,7 +164,7 @@ export const handleCanvasMouseUp = ({
   if (selectedShapeRef.current === "freeform") return;
 
   // sync shape in storage as drawing is stopped
-  syncShapeInStorage(shapeRef.current);
+  // syncShapeInStorage(shapeRef.current);
 
   // set everything to null
   shapeRef.current = null;

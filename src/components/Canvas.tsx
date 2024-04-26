@@ -16,8 +16,8 @@ import {
 import { useStorage } from "#root/liveblocks.config";
 import { ActiveElement, Attributes } from "@/types/type";
 import { handleKeyDown } from "@/lib/key-events";
-import { useAtom } from "jotai";
-import { canvasAtom } from "@/atoms/atoms";
+import { useAtom, useSetAtom } from "jotai";
+import { canvasAtom, selectionAtom } from "@/state/atoms";
 
 type CanvasProps = {
   shapeRef: React.MutableRefObject<fabric.Object | null>;
@@ -59,6 +59,7 @@ const CanvasFC = ({
 }: CanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [canvas, setCanvas] = useAtom(canvasAtom);
+  const setSelectionAtom = useSetAtom(selectionAtom);
 
   const canvasObjects = useStorage((root) => root.canvasObjects);
 
@@ -110,6 +111,7 @@ const CanvasFC = ({
     });
 
     canvasInit.on("selection:created", (options) => {
+      setSelectionAtom(options);
       handleCanvasSelectionCreated({ options, isEditingRef, setElementAttributes });
     });
 
@@ -166,6 +168,7 @@ const CanvasFC = ({
     updateCursorType,
     canvas,
     setCanvas,
+    setSelectionAtom,
   ]);
 
   useEffect(() => {

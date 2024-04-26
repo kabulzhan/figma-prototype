@@ -9,7 +9,7 @@ import { defaultNavElement } from "./constants";
 import { handleDelete } from "./lib/key-events";
 import { handleImageUpload } from "./lib/shapes";
 import { useAtomValue } from "jotai";
-import { canvasAtom } from "./atoms/atoms";
+import { canvasAtom } from "./state/atoms";
 
 function App() {
   const canvas = useAtomValue(canvasAtom);
@@ -94,8 +94,6 @@ function App() {
 
   const handleActiveElement = useCallback(
     (elem: ActiveElement) => {
-      console.log("ATOM: ", canvas);
-
       if (!canvas) return;
       setActiveElement(elem);
 
@@ -146,7 +144,7 @@ function App() {
   );
 
   const syncShapeInStorage = useMutation(({ storage }, object) => {
-    if (!object) return;
+    if (!object.objectId) return;
     const { objectId } = object;
 
     const shapeData = object.toJSON();
