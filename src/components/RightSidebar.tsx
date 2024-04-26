@@ -9,7 +9,7 @@ import { useRef } from "react";
 const RightSidebar = ({
   elementAttributes,
   setElementAttributes,
-  fabricRef,
+  canvas,
   isEditingRef,
   activeObjectRef,
   syncShapeInStorage,
@@ -17,6 +17,7 @@ const RightSidebar = ({
   const colorInputRef = useRef(null);
   const strokeInputRef = useRef(null);
   const handleInputChange = (property: string, value: string) => {
+    if (!canvas) return;
     if (!isEditingRef.current) isEditingRef.current = true;
 
     setElementAttributes((prev) => ({
@@ -25,7 +26,7 @@ const RightSidebar = ({
     }));
 
     modifyShape({
-      canvas: fabricRef.current as fabric.Canvas,
+      canvas,
       property,
       value,
       activeObjectRef,

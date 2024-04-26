@@ -21,10 +21,9 @@ fabric.Object.prototype.controls.mtr.visible = false;
 
 // initialize fabric canvas
 export const initializeFabric = ({
-  fabricRef,
   canvasRef,
 }: {
-  fabricRef: React.MutableRefObject<fabric.Canvas | null>;
+  // fabricRef: React.MutableRefObject<fabric.Canvas | null>;
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
 }) => {
   // get canvas element
@@ -35,10 +34,9 @@ export const initializeFabric = ({
     width: canvasContainer?.clientWidth,
     height: canvasContainer?.clientHeight,
   });
-  canvas._objects;
 
   // set canvas reference to fabricRef so we can use it later anywhere outside canvas listener
-  fabricRef.current = canvas;
+  // fabricRef.current = canvas;
 
   return canvas;
 };
@@ -111,7 +109,6 @@ export const handleCanvaseMouseMove = ({
   // if selected shape is freeform, return
   if (!isDrawing.current) return;
   if (selectedShapeRef.current === "freeform") return;
-  console.log("THIS");
   canvas.isDrawingMode = false;
 
   // get pointer coordinates
@@ -319,9 +316,9 @@ export const handleCanvasObjectScaling = ({
 };
 
 // render canvas objects coming from storage on canvas
-export const renderCanvas = ({ fabricRef, canvasObjects, activeObjectRef }: RenderCanvas) => {
+export const renderCanvas = ({ canvas, canvasObjects, activeObjectRef }: RenderCanvas) => {
   // clear canvas
-  fabricRef.current?.clear();
+  canvas.clear();
 
   // render all objects on canvas
   Array.from(canvasObjects, ([objectId, objectData]) => {
@@ -340,11 +337,11 @@ export const renderCanvas = ({ fabricRef, canvasObjects, activeObjectRef }: Rend
         enlivenedObjects.forEach((enlivenedObj) => {
           // if element is active, keep it in active state so that it can be edited further
           if (activeObjectRef.current?.objectId === objectId) {
-            fabricRef.current?.setActiveObject(enlivenedObj);
+            canvas.setActiveObject(enlivenedObj);
           }
 
           // add object to canvas
-          fabricRef.current?.add(enlivenedObj);
+          canvas.add(enlivenedObj);
         });
       },
       /**
@@ -358,7 +355,7 @@ export const renderCanvas = ({ fabricRef, canvasObjects, activeObjectRef }: Rend
     );
   });
 
-  fabricRef.current?.renderAll();
+  canvas.renderAll();
 };
 
 // resize canvas dimensions on window resize

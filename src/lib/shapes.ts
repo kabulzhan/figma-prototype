@@ -91,11 +91,10 @@ export const handleImageUpload = ({ file, canvas, shapeRef, syncShapeInStorage }
 
   reader.onload = () => {
     fabric.Image.fromURL(reader.result as string, (img) => {
-      if (!canvas.current) return;
       img.scaleToWidth(200);
       img.scaleToHeight(200);
 
-      canvas.current.add(img);
+      canvas.add(img);
 
       //@ts-expect-error add custom id property
       img.objectId = uuidv4();
@@ -103,7 +102,7 @@ export const handleImageUpload = ({ file, canvas, shapeRef, syncShapeInStorage }
       shapeRef.current = img;
 
       syncShapeInStorage(img);
-      canvas.current.requestRenderAll();
+      canvas.requestRenderAll();
     });
   };
 

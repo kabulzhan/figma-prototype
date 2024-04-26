@@ -16,12 +16,14 @@ import {
 import { useStorage } from "#root/liveblocks.config";
 import { ActiveElement, Attributes } from "@/types/type";
 import { handleKeyDown } from "@/lib/key-events";
+import { useAtom } from "jotai";
+import { canvasAtom } from "@/atoms/atoms";
 
 type CanvasProps = {
   shapeRef: React.MutableRefObject<fabric.Object | null>;
   selectedShapeRef: React.MutableRefObject<string | null>;
   setActiveElement: React.Dispatch<React.SetStateAction<ActiveElement>>;
-  fabricRef: React.MutableRefObject<fabric.Canvas | null>;
+  // fabricRef: React.MutableRefObject<fabric.Canvas | null>;
   deleteShapeFromStorage: (objectId: string) => void;
   isDrawing: React.MutableRefObject<boolean>;
   syncShapeInStorage: (object: fabric.Object) => void;
@@ -44,7 +46,7 @@ const CanvasFC = ({
   shapeRef,
   selectedShapeRef,
   setActiveElement,
-  fabricRef,
+  // fabricRef,
   deleteShapeFromStorage,
   isDrawing,
   syncShapeInStorage,
@@ -56,28 +58,34 @@ const CanvasFC = ({
   updateCursorType,
 }: CanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  // const [isFabricInitialized, setIsFabricInitialized] = useState(false);
+  const [canvas, setCanvas] = useAtom(canvasAtom);
 
   const canvasObjects = useStorage((root) => root.canvasObjects);
 
+  const isCanvasInitialized = useRef(false);
+
   useEffect(() => {
-    if (fabricRef.current) return;
+    // if (fabricRef.current) return;
+    if (isCanvasInitialized.current) return;
+    // if (canvas) return;
 
-    const canvas = initializeFabric({ canvasRef, fabricRef }) as IExtendedCanvas;
-    if (!canvas) return;
+    const canvasInit = initializeFabric({ canvasRef }) as IExtendedCanvas;
+    if (!canvasInit) return;
+    isCanvasInitialized.current = true;
+    setCanvas(canvasInit);
 
-    canvas.on("mouse:down", (options) => {
-      canvas.isDragging = true;
+    canvasInit.on("mouse:down", (options) => {
+      canvasInit.isDragging = true;
       if (selectedShapeRef.current === "hand") updateCursorType("grabbing");
-      if (!canvas.selection) return;
-      handleCanvasMouseDown({ options, canvas, isDrawing, shapeRef, selectedShapeRef });
+      if (!canvasInit.selection) return;
+      handleCanvasMouseDown({ options, canvas: canvasInit, isDrawing, shapeRef, selectedShapeRef });
     });
 
-    canvas.on("mouse:move", (options) => {
-      if (!canvas.selection) return;
+    canvasInit.on("mouse:move", (options) => {
+      if (!canvasInit.selection) return;
       handleCanvaseMouseMove({
         options,
-        canvas,
+        canvas: canvasInit,
         isDrawing,
         shapeRef,
         selectedShapeRef,
@@ -85,8 +93,8 @@ const CanvasFC = ({
       });
     });
 
-    canvas.on("mouse:up", () => {
-      canvas.isDragging = false;
+    canvasInit.on("mouse:up", () => {
+      canvasInit.isDragging = false;
       if (selectedShapeRef.current === "hand") updateCursorType("hand");
       handleCanvasMouseUp({
         isDrawing,
@@ -96,46 +104,46 @@ const CanvasFC = ({
       });
     });
 
-    canvas.on("object:modified", (options) => {
-      if (!canvas.selection) return;
+    canvasInit.on("object:modified", (options) => {
+      if (!canvasInit.selection) return;
       handleCanvasObjectModified({ options, syncShapeInStorage });
     });
 
-    canvas.on("selection:created", (options) => {
+    canvasInit.on("selection:created", (options) => {
       handleCanvasSelectionCreated({ options, isEditingRef, setElementAttributes });
     });
 
-    canvas.on("object:scaling", (options) =>
+    canvasInit.on("object:scaling", (options) =>
       handleCanvasObjectScaling({ options, setElementAttributes }),
     );
 
-    canvas.on("path:created", (options) => handlePathCreated({ options, syncShapeInStorage }));
+    canvasInit.on("path:created", (options) => handlePathCreated({ options, syncShapeInStorage }));
 
-    canvas.on("mouse:wheel", function (opt) {
-      let zoom = canvas.getZoom();
+    canvasInit.on("mouse:wheel", function (opt) {
+      let zoom = canvasInit.getZoom();
       zoom *= 0.999 ** opt.e.deltaY;
       if (zoom > MAX_SCALE) zoom = MAX_SCALE;
       if (zoom < MIN_SCALE) zoom = MIN_SCALE;
 
-      canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+      canvasInit.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
       opt.e.preventDefault();
       opt.e.stopPropagation();
     });
 
-    canvas.on("mouse:move", function (event) {
-      if (canvas.isDragging && selectedShapeRef.current === "hand") {
+    canvasInit.on("mouse:move", function (event) {
+      if (canvasInit.isDragging && selectedShapeRef.current === "hand") {
         const mEvent = event.e;
         const delta = new fabric.Point(mEvent.movementX, mEvent.movementY);
-        canvas.relativePan(delta);
+        canvasInit.relativePan(delta);
       }
     });
 
     // window.addEventListener("resize", () => handleResize({ canvas: fabricRef.current }));
 
-    window.addEventListener("keydown", (e) => {
+    window.addEventListener("keydown", (e): void => {
       handleKeyDown({
         e,
-        canvas: fabricRef.current,
+        canvas: canvasInit,
         undo,
         redo,
         syncShapeInStorage,
@@ -144,7 +152,7 @@ const CanvasFC = ({
     });
   }, [
     selectedShapeRef,
-    fabricRef,
+    // fabricRef,
     setActiveElement,
     undo,
     redo,
@@ -156,12 +164,16 @@ const CanvasFC = ({
     setElementAttributes,
     deleteShapeFromStorage,
     updateCursorType,
+    canvas,
+    setCanvas,
   ]);
 
   useEffect(() => {
-    renderCanvas({ fabricRef, canvasObjects, activeObjectRef });
-  }, [canvasObjects]);
+    if (!canvas) return;
+    renderCanvas({ canvas, canvasObjects, activeObjectRef });
+  }, [canvasObjects, canvas]);
 
+  console.log("CANVAS");
   return <canvas ref={canvasRef} className="h-full w-full" />;
 };
 

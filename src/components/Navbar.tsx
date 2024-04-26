@@ -57,9 +57,6 @@ const NavbarFC = ({
   );
 };
 
-const Navbar = memo(
-  NavbarFC,
-  (prevProps, nextProps) => prevProps.activeElement === nextProps.activeElement,
-);
+const Navbar = memo(NavbarFC);
 
 export default Navbar;

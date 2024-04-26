@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { useBroadcastEvent, useEventListener, useMyPresence } from "#root/liveblocks.config";
 import LiveCursors from "./cursor/LiveCursors";
 import CursorChat from "./cursor/CursorChat";
@@ -20,7 +20,7 @@ type LiveProps = {
   selectedShapeRef: React.MutableRefObject<string | null>;
   isDrawing: React.MutableRefObject<boolean>;
   setActiveElement: React.Dispatch<React.SetStateAction<ActiveElement>>;
-  fabricRef: React.MutableRefObject<fabric.Canvas | null>;
+  // fabricRef: React.MutableRefObject<fabric.Canvas | null>;
   deleteShapeFromStorage: (objectId: string) => void;
   syncShapeInStorage: (object: fabric.Object) => void;
   isEditingRef: React.MutableRefObject<boolean>;
@@ -32,11 +32,11 @@ type LiveProps = {
   handleActiveElement: (elem: ActiveElement) => void;
 };
 
-const Live = ({
+const LiveFC = ({
   shapeRef,
   selectedShapeRef,
   setActiveElement,
-  fabricRef,
+  // fabricRef,
   deleteShapeFromStorage,
   isDrawing,
   syncShapeInStorage,
@@ -174,7 +174,7 @@ const Live = ({
     return () => {
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, [updateMyPresence]);
+  }, [updateMyPresence, handleActiveElement]);
 
   const setReactions = useCallback((reaction: string) => {
     setCursorState({ mode: CursorMode.Reaction, reaction, isPressed: false });
@@ -227,7 +227,7 @@ const Live = ({
             shapeRef={shapeRef}
             selectedShapeRef={selectedShapeRef}
             setActiveElement={setActiveElement}
-            fabricRef={fabricRef}
+            // fabricRef={fabricRef}
             deleteShapeFromStorage={deleteShapeFromStorage}
             isDrawing={isDrawing}
             syncShapeInStorage={syncShapeInStorage}
@@ -273,5 +273,7 @@ const Live = ({
     </ContextMenuWrapper>
   );
 };
+
+const Live = memo(LiveFC);
 
 export default Live;

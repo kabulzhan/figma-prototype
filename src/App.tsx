@@ -8,9 +8,13 @@ import { useMutation, useStorage, useUndo, useRedo } from "#root/liveblocks.conf
 import { defaultNavElement } from "./constants";
 import { handleDelete } from "./lib/key-events";
 import { handleImageUpload } from "./lib/shapes";
+import { useAtomValue } from "jotai";
+import { canvasAtom } from "./atoms/atoms";
 
 function App() {
-  const fabricRef = useRef<fabric.Canvas>(null);
+  const canvas = useAtomValue(canvasAtom);
+
+  // const fabricRef = useRef<fabric.Canvas>(null);
   const shapeRef = useRef<fabric.Object | null>(null);
   const selectedShapeRef = useRef<string | null>(null);
   const canvasObjects = useStorage((root) => root.canvasObjects);
@@ -55,52 +59,55 @@ function App() {
 
   const updateCursorType = useCallback(
     (activeElemParam?: string) => {
-      if (!fabricRef.current) return;
+      if (!canvas) return;
       const value = activeElemParam ?? activeElement?.value;
 
       switch (value) {
         case "hand":
-          fabricRef.current.hoverCursor = "grab";
-          fabricRef.current.defaultCursor = "grab";
-          fabricRef.current.moveCursor = "grab";
-          fabricRef.current.setCursor("grab");
-          fabricRef.current.renderTop();
+          canvas.hoverCursor = "grab";
+          canvas.defaultCursor = "grab";
+          canvas.moveCursor = "grab";
+          canvas.setCursor("grab");
+          canvas.renderTop();
           break;
 
         case "grabbing":
-          fabricRef.current.hoverCursor = "grabbing";
-          fabricRef.current.defaultCursor = "grabbing";
-          fabricRef.current.moveCursor = "grabbing";
-          fabricRef.current.setCursor("grabbing");
-          fabricRef.current.renderTop();
+          canvas.hoverCursor = "grabbing";
+          canvas.defaultCursor = "grabbing";
+          canvas.moveCursor = "grabbing";
+          canvas.setCursor("grabbing");
+          canvas.renderTop();
           break;
 
         default:
-          if (fabricRef.current.hoverCursor !== "default") {
-            fabricRef.current.hoverCursor = "default";
-            fabricRef.current.defaultCursor = "default";
-            fabricRef.current.setCursor("default");
-            fabricRef.current.renderTop();
+          if (canvas.hoverCursor !== "default") {
+            canvas.hoverCursor = "default";
+            canvas.defaultCursor = "default";
+            canvas.setCursor("default");
+            canvas.renderTop();
           }
           break;
       }
     },
-    [activeElement],
+    [activeElement, canvas],
   );
 
   const handleActiveElement = useCallback(
     (elem: ActiveElement) => {
+      console.log("ATOM: ", canvas);
+
+      if (!canvas) return;
       setActiveElement(elem);
 
       switch (elem?.value) {
         case "reset":
           deleteAllShapes();
-          fabricRef.current?.clear();
+          canvas.clear();
           setActiveElement(defaultNavElement);
           break;
 
         case "delete":
-          handleDelete(fabricRef.current as fabric.Canvas, deleteShapeFromStorage);
+          handleDelete(canvas, deleteShapeFromStorage);
           setActiveElement(defaultNavElement);
           break;
 
@@ -108,15 +115,14 @@ function App() {
           imageInputRef.current?.click();
           isDrawing.current = false;
 
-          if (fabricRef.current) {
-            fabricRef.current.isDrawingMode = false;
+          if (canvas) {
+            canvas.isDrawingMode = false;
           }
           break;
 
         case "hand":
-          if (!fabricRef.current) break;
-          fabricRef.current.selection = false;
-          fabricRef.current.forEachObject(function (o) {
+          canvas.selection = false;
+          canvas.forEachObject(function (o) {
             o.selectable = false;
           });
           updateCursorType("hand");
@@ -124,10 +130,10 @@ function App() {
           break;
 
         default:
-          if (fabricRef.current && !fabricRef.current.selection) {
+          if (!canvas.selection) {
             updateCursorType("default");
-            fabricRef.current.selection = true;
-            fabricRef.current.forEachObject(function (o) {
+            canvas.selection = true;
+            canvas.forEachObject(function (o) {
               o.selectable = true;
             });
           }
@@ -136,7 +142,7 @@ function App() {
 
       selectedShapeRef.current = elem?.value as string;
     },
-    [deleteAllShapes, deleteShapeFromStorage, updateCursorType],
+    [deleteAllShapes, deleteShapeFromStorage, updateCursorType, canvas],
   );
 
   const syncShapeInStorage = useMutation(({ storage }, object) => {
@@ -149,7 +155,7 @@ function App() {
     const canvasObjects = storage.get("canvasObjects");
     canvasObjects.set(objectId, shapeData);
   }, []);
-
+  console.log("APP");
   return (
     <main className="h-screen overflow-hidden">
       <Navbar
@@ -158,14 +164,14 @@ function App() {
         imageInputRef={imageInputRef}
         handleImageUpload={(e: ChangeEvent<HTMLInputElement>) => {
           e.stopPropagation();
-          if (e.target.files?.[0]) {
-            handleImageUpload({
-              file: e.target.files[0],
-              canvas: fabricRef,
-              shapeRef,
-              syncShapeInStorage,
-            });
-          }
+          if (!e.target.files?.[0] || !canvas) return;
+
+          handleImageUpload({
+            file: e.target.files[0],
+            canvas,
+            shapeRef,
+            syncShapeInStorage,
+          });
         }}
       />
       <section className="flex h-full flex-row">
@@ -174,7 +180,7 @@ function App() {
           shapeRef={shapeRef}
           selectedShapeRef={selectedShapeRef}
           setActiveElement={setActiveElement}
-          fabricRef={fabricRef}
+          // fabricRef={fabricRef}
           deleteShapeFromStorage={deleteShapeFromStorage}
           isDrawing={isDrawing}
           syncShapeInStorage={syncShapeInStorage}
@@ -189,7 +195,7 @@ function App() {
         <RightSidebar
           elementAttributes={elementAttributes}
           setElementAttributes={setElementAttributes}
-          fabricRef={fabricRef}
+          canvas={canvas}
           isEditingRef={isEditingRef}
           activeObjectRef={activeObjectRef}
           syncShapeInStorage={syncShapeInStorage}

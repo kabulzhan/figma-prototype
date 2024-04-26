@@ -83,7 +83,7 @@ export type ElementDirection = {
 
 export type ImageUpload = {
   file: File;
-  canvas: React.RefObject<fabric.Canvas>;
+  canvas: fabric.Canvas;
   shapeRef: React.MutableRefObject<fabric.Object | null>;
   syncShapeInStorage: (shape: fabric.Object) => void;
 };
@@ -91,7 +91,7 @@ export type ImageUpload = {
 export type RightSidebarProps = {
   elementAttributes: Attributes;
   setElementAttributes: React.Dispatch<React.SetStateAction<Attributes>>;
-  fabricRef: React.RefObject<fabric.Canvas | null>;
+  canvas: fabric.Canvas | null;
   activeObjectRef: React.RefObject<fabric.Object | null>;
   isEditingRef: React.MutableRefObject<boolean>;
   syncShapeInStorage: (obj: any) => void;
@@ -168,7 +168,7 @@ export type CanvasObjectScaling = {
 };
 
 export type RenderCanvas = {
-  fabricRef: React.MutableRefObject<fabric.Canvas | null>;
+  canvas: fabric.Canvas;
   canvasObjects: any;
   activeObjectRef: any;
 };
