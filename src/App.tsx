@@ -30,7 +30,7 @@ function App() {
   const [elementAttributes, setElementAttributes] = useState<Attributes>({
     width: "",
     height: "",
-    fontSize: "",
+    fontSize: undefined,
     fontFamily: "",
     fontWeight: "",
     fill: "#aabbcc",

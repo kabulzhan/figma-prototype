@@ -50,11 +50,11 @@ export type ShapeData = {
 export type Attributes = {
   width: string;
   height: string;
-  fontSize: string;
-  fontFamily: string;
-  fontWeight: string;
   fill: string;
   stroke: string;
+  fontSize?: number;
+  fontFamily?: string;
+  fontWeight?: string | number;
 };
 
 export type ActiveElement = {

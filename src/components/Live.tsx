@@ -10,12 +10,10 @@ import FlyingReaction from "./reaction/FlyingReaction";
 import useInterval from "@/hooks/useInterval";
 import Canvas from "./Canvas";
 import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
+  ContextMenuWrapper,
   ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import { shortcuts } from "@/constants";
+} from "@/components/ui/context-menu/context-menu-components";
+import ContextMenu from "./ui/context-menu/context-menu";
 
 type LiveProps = {
   shapeRef: React.MutableRefObject<fabric.Object | null>;
@@ -215,7 +213,7 @@ const Live = ({
   );
 
   return (
-    <ContextMenu>
+    <ContextMenuWrapper>
       <ContextMenuTrigger>
         <div
           id="canvas"
@@ -271,15 +269,8 @@ const Live = ({
       </ContextMenuTrigger>
 
       {/* <ContextMenuTrigger>Right click</ContextMenuTrigger> */}
-      <ContextMenuContent className="right-menu-content">
-        {shortcuts.map((item) => (
-          <ContextMenuItem key={item.key} onClick={() => handleContextMenuClick(item.name)}>
-            <p>{item.name}</p>
-            <p className="text-xs text-primary-grey-300">{item.shortcut}</p>
-          </ContextMenuItem>
-        ))}
-      </ContextMenuContent>
-    </ContextMenu>
+      <ContextMenu handleContextMenuClick={handleContextMenuClick} />
+    </ContextMenuWrapper>
   );
 };
 

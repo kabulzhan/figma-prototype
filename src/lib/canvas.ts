@@ -4,6 +4,7 @@ import { fabric } from "fabric";
 import { v4 as uuid4 } from "uuid";
 
 import {
+  Attributes,
   CanvasMouseDown,
   CanvasMouseMove,
   CanvasMouseUp,
@@ -223,7 +224,7 @@ export const handleCanvasObjectMoving = ({ options }: { options: fabric.IEvent }
   target.setCoords();
 
   // restrict object to canvas boundaries (horizontal)
-  if (target && target.left) {
+  if (target?.left) {
     target.left = Math.max(
       0,
       Math.min(target.left, (canvas.width || 0) - (target.getScaledWidth() || target.width || 0)),
@@ -231,12 +232,46 @@ export const handleCanvasObjectMoving = ({ options }: { options: fabric.IEvent }
   }
 
   // restrict object to canvas boundaries (vertical)
-  if (target && target.top) {
+  if (target?.top) {
     target.top = Math.max(
       0,
       Math.min(target.top, (canvas.height || 0) - (target.getScaledHeight() || target.height || 0)),
     );
   }
+};
+
+type HandleSetElementAttributesParams = {
+  selectedElement: fabric.Object | fabric.Text;
+  setElementAttributes: React.Dispatch<React.SetStateAction<Attributes>>;
+};
+
+const handleSetElementAttributes = ({
+  selectedElement,
+  setElementAttributes,
+}: HandleSetElementAttributesParams) => {
+  const scaledWidth =
+    selectedElement?.scaleX && selectedElement?.width
+      ? selectedElement.width * selectedElement?.scaleX
+      : selectedElement?.width;
+
+  const scaledHeight =
+    selectedElement?.scaleY && selectedElement?.height
+      ? selectedElement.height * selectedElement?.scaleY
+      : selectedElement?.height;
+
+  const displayAttributes: Attributes = {
+    width: scaledWidth?.toFixed(0).toString() ?? "",
+    height: scaledHeight?.toFixed(0).toString() ?? "",
+    fill: selectedElement?.fill?.toString() ?? "",
+    stroke: selectedElement?.stroke ?? "",
+  };
+  if (selectedElement instanceof fabric.Text) {
+    displayAttributes.fontSize = selectedElement.fontSize;
+    displayAttributes.fontFamily = selectedElement.fontFamily;
+    displayAttributes.fontWeight = selectedElement.fontWeight;
+  }
+
+  setElementAttributes(displayAttributes);
 };
 
 // set element attributes when element is selected
@@ -245,38 +280,16 @@ export const handleCanvasSelectionCreated = ({
   isEditingRef,
   setElementAttributes,
 }: CanvasSelectionCreated) => {
-  // if user is editing manually, return
-  if (isEditingRef.current) return;
-
-  // if no element is selected, return
-  if (!options?.selected) return;
+  // if user is editing manually or if no element is selected, return
+  if (isEditingRef.current || !options?.selected) return;
 
   // get the selected element
-  const selectedElement = options?.selected[0] as fabric.Object;
+  const selectedElement: fabric.Object | fabric.Text = options?.selected[0];
 
   // if only one element is selected, set element attributes
   if (selectedElement && options.selected.length === 1) {
     // calculate scaled dimensions of the object
-    const scaledWidth = selectedElement?.scaleX
-      ? selectedElement?.width! * selectedElement?.scaleX
-      : selectedElement?.width;
-
-    const scaledHeight = selectedElement?.scaleY
-      ? selectedElement?.height! * selectedElement?.scaleY
-      : selectedElement?.height;
-
-    setElementAttributes({
-      width: scaledWidth?.toFixed(0).toString() || "",
-      height: scaledHeight?.toFixed(0).toString() || "",
-      fill: selectedElement?.fill?.toString() || "",
-      stroke: selectedElement?.stroke || "",
-      // @ts-ignore
-      fontSize: selectedElement?.fontSize || "",
-      // @ts-ignore
-      fontFamily: selectedElement?.fontFamily || "",
-      // @ts-ignore
-      fontWeight: selectedElement?.fontWeight || "",
-    });
+    handleSetElementAttributes({ setElementAttributes, selectedElement });
   }
 };
 
@@ -288,18 +301,20 @@ export const handleCanvasObjectScaling = ({
   const selectedElement = options.target;
 
   // calculate scaled dimensions of the object
-  const scaledWidth = selectedElement?.scaleX
-    ? selectedElement?.width! * selectedElement?.scaleX
-    : selectedElement?.width;
+  const scaledWidth =
+    selectedElement?.scaleX && selectedElement.width
+      ? selectedElement.width * selectedElement?.scaleX
+      : selectedElement?.width;
 
-  const scaledHeight = selectedElement?.scaleY
-    ? selectedElement?.height! * selectedElement?.scaleY
-    : selectedElement?.height;
+  const scaledHeight =
+    selectedElement?.scaleY && selectedElement?.height
+      ? selectedElement.height * selectedElement?.scaleY
+      : selectedElement?.height;
 
   setElementAttributes((prev) => ({
     ...prev,
-    width: scaledWidth?.toFixed(0).toString() || "",
-    height: scaledHeight?.toFixed(0).toString() || "",
+    width: scaledWidth?.toFixed(0).toString() ?? "",
+    height: scaledHeight?.toFixed(0).toString() ?? "",
   }));
 };
 

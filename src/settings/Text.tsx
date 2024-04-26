@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useMemo } from "react";
 
 const selectConfigs = [
   {
@@ -23,9 +24,9 @@ const selectConfigs = [
 ];
 
 type TextProps = {
-  fontFamily: string;
-  fontSize: string;
-  fontWeight: string;
+  fontFamily?: string;
+  fontSize?: number;
+  fontWeight?: string | number;
   handleInputChange: (property: string, value: string) => void;
 };
 
@@ -63,47 +64,46 @@ type Props = {
     placeholder: string;
     options: { label: string; value: string }[];
   };
-  fontSize: string;
-  fontWeight: string;
-  fontFamily: string;
+  fontFamily?: string;
+  fontSize?: number;
+  fontWeight?: string | number;
   handleInputChange: (property: string, value: string) => void;
 };
 
-const RenderSelect = ({ config, fontSize, fontWeight, fontFamily, handleInputChange }: Props) => (
-  <Select
-    key={config.property}
-    onValueChange={(value) => handleInputChange(config.property, value)}
-    value={
-      config.property === "fontFamily"
-        ? fontFamily
-        : config.property === "fontSize"
-          ? fontSize
-          : fontWeight
+const RenderSelect = ({ config, fontSize, fontWeight, fontFamily, handleInputChange }: Props) => {
+  const { value, placeholder } = useMemo(() => {
+    switch (config.property) {
+      case "fontFamily":
+        return { value: fontFamily, placeholder: "Choose a font" };
+      case "fontSize":
+        return { value: fontSize, placeholder: "30" };
+      default:
+        return { value: fontWeight, placeholder: "Semibold" };
     }
-  >
-    <SelectTrigger className="no-ring w-full rounded-sm border border-primary-grey-200">
-      <SelectValue
-        placeholder={
-          config.property === "fontFamily"
-            ? "Choose a font"
-            : config.property === "fontSize"
-              ? "30"
-              : "Semibold"
-        }
-      />
-    </SelectTrigger>
-    <SelectContent className="border-primary-grey-200 bg-primary-black text-primary-grey-300">
-      {config.options.map((option) => (
-        <SelectItem
-          key={option.value}
-          value={option.value}
-          className=" hover:bg-primary-green hover:text-primary-black"
-        >
-          {option.label}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-);
+  }, [config?.property, fontFamily, fontWeight, fontSize]);
+
+  return (
+    <Select
+      key={config.property}
+      onValueChange={(value) => handleInputChange(config.property, value)}
+      value={String(value)}
+    >
+      <SelectTrigger className="no-ring w-full rounded-sm border border-primary-grey-200">
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent className="border-primary-grey-200 bg-primary-black text-primary-grey-300">
+        {config.options.map((option) => (
+          <SelectItem
+            key={option.value}
+            value={option.value}
+            className=" hover:bg-primary-green hover:text-primary-black"
+          >
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
 
 export default Text;
